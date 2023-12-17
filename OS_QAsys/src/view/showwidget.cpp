@@ -9,79 +9,122 @@
 #include <QEventLoop>
 #include <QDialog>
 
+#define GLOBAL_SPEED 1
+#define BUFFQUE_SPEED 49
+#define CONSUME_SPEED 35
+
 ShowWidget::ShowWidget(int which, int bufSize, int memSize, QWidget *parent)
     : QWidget{parent}
-    , basic(QPoint(0, 0))
-    , base(((memSize >> 4) + 2 + !(!(memSize & 0xf))) * 250, 870)
+    , view1Size(((memSize >> 4) + 2 + !(!(memSize & 0xf))) * 250, 830)
+    , view1(new QWidget(this))
 {
-    this->resize(base);
+    this->resize(view1Size);
+
+    // number reset
     MemBlock::ReSet();
     RandomProducer::ReSet();
-    que = new BuffQue(bufSize, this);
-    prders = new Producers(4, que, this);
+
+    // new space for modules to show
+    QPushButton *pDo = new QPushButton("Producers DO", view1);
+    QPushButton *cDo = new QPushButton("Consumers DO", view1);
+    QSlider *globalSpeed = new QSlider(view1);
+    QSlider *buffQueSpeed = new QSlider(view1);
+    QSlider *consumeSpeed = new QSlider(view1);
+    QLabel *globalSpeedValue = new QLabel("0", view1);
+    QLabel *buffQueSpeedValue = new QLabel("0", view1);
+    QLabel *consumeSpeedValue = new QLabel("0", view1);
+    BuffQue *buffer = new BuffQue(bufSize, view1);
+    Producers *prders = new Producers(4, buffer, view1);
+    Consumers *csmers;
     switch (which)
     {
-    case 0:
-        csmers = new FIFOConsumer(memSize, que, this);
+    case 0: {
+        csmers = new FIFOConsumer(memSize, buffer, view1);
         break;
-    case 1:
-        csmers = new LRUConsumer(memSize, que, this);
+    }
+    case 1: {
+        csmers = new LRUConsumer(memSize, buffer, view1);
         break;
-    case 2:
-        csmers = new LFUConsumer(memSize, que, this);
+    }
+    case 2: {
+        csmers = new LFUConsumer(memSize, buffer, view1);
         break;
-    case 3:
-        csmers = new NRUConsumer(memSize, que, this);
+    }
+    case 3: {
+        csmers = new NRUConsumer(memSize, buffer, view1);
+        break;
+    }
+    default: {
+        Q_ASSERT_X(false, "class ShowWidget", "Consumers new false");
+        csmers = new FIFOConsumer(memSize, buffer, view1); // to resist the warning
+    }
     }
 
-    s1 = new QPushButton("Producers DO", this);
-    s2 = new QPushButton("Consumers DO", this);
-    s1->setCheckable(true);
-    s2->setCheckable(true);
-    connect(s1, &QPushButton::clicked, this, [this](bool k) {
-        if (k)
+    // modules move to
+    pDo->move(QPoint(10, 10) + basic);
+    cDo->move(QPoint(10, 50) + basic);
+    globalSpeed->move(QPoint(185, 40) + basic);
+    buffQueSpeed->move(QPoint(220, 40) + basic);
+    consumeSpeed->move(QPoint(255, 40) + basic);
+    globalSpeedValue->move(QPoint(185, 10) + basic);
+    buffQueSpeedValue->move(QPoint(220, 10) + basic);
+    consumeSpeedValue->move(QPoint(255, 10) + basic);
+    buffer->MoveTo(QPoint(335, 10) + basic);
+    prders->MoveTo(QPoint(10, 132) + basic);
+    csmers->MemoryMoveTo(QPoint(500, 20) + basic);
+    csmers->MemDataMoveTo(QPoint(10, 474) + basic);
+
+    // modules setting
+    pDo->setCheckable(true);
+    cDo->setCheckable(true);
+
+    auto initSpeedSlider = [this](QSlider *slider, QLabel *valueLabel) {
+        slider->resize(25, 80);
+        slider->setInvertedAppearance(true);
+        valueLabel->resize(25, 20);
+        valueLabel->setAlignment(Qt::AlignCenter);
+    };
+
+    initSpeedSlider(globalSpeed, globalSpeedValue);
+    initSpeedSlider(buffQueSpeed, buffQueSpeedValue);
+    initSpeedSlider(consumeSpeed, consumeSpeedValue);
+
+    // connect signals
+    connect(pDo, &QPushButton::clicked, this, [prders](bool key) {
+        if (key)
             prders->Start();
         else
             prders->Stop();
     });
-    connect(s2, &QPushButton::clicked, this, [this](bool k) {
-        if (k)
+    connect(cDo, &QPushButton::clicked, this, [csmers](bool key) {
+        if (key)
             csmers->Start();
         else
             csmers->Stop();
     });
-
-    globalSpeed = new QSlider(this);
-    consumeSpeed = new QSlider(this);
-    globalSpeed->resize(25, 100);
-    consumeSpeed->resize(25, 100);
-    connect(globalSpeed, &QSlider::sliderMoved, &ShowLabel::SetSpeed);
-    connect(consumeSpeed, &QSlider::sliderMoved, &MemBlock::SetSpeed);
-//    connect(globalSpeed, &QSlider::sliderMoved, this, [](int v) {qDebug() << v << "g";});
-//    connect(consumeSpeed, &QSlider::sliderMoved, this, [](int v) {qDebug() << v << "c";});
-    globalSpeed->setValue(5);
-    consumeSpeed->setValue(45);
-    globalSpeed->setInvertedAppearance(true);
-    consumeSpeed->setInvertedAppearance(true);
-    ShowLabel::SetSpeed(globalSpeed->value());
-    MemBlock::SetSpeed(consumeSpeed->value());
+    connect(globalSpeed, &QSlider::valueChanged, this, [globalSpeedValue](int value) {
+        ShowLabel::SetSpeed(value);
+        globalSpeedValue->setText(QString::number(99 - value));
+    });
+    connect(buffQueSpeed, &QSlider::valueChanged, this, [buffQueSpeedValue](int value) {
+        BuffQue::SetSpeed(value);
+        buffQueSpeedValue->setText(QString::number(99 - value));
+    });
+    connect(consumeSpeed, &QSlider::valueChanged, this, [consumeSpeedValue](int value) {
+        MemBlock::SetSpeed(value);
+        consumeSpeedValue->setText(QString::number(99 - value));
+    });
+    // something need do after connect
+    globalSpeed->setValue(GLOBAL_SPEED);
+    consumeSpeed->setValue(CONSUME_SPEED);
+    buffQueSpeed->setValue(BUFFQUE_SPEED);
 }
 
 void ShowWidget::resizeEvent(QResizeEvent *event)
 {
-    basic = QPoint((this->width() - base.width()), (this->height() - base.height())) / 2;
-    MoveTo();
+    view1->move(
+        (this->width() - view1Size.width()) >> 1,
+        (this->height() - view1Size.height()) >> 1);
 }
 
-void ShowWidget::MoveTo()
-{
-    que->MoveTo(QPoint(335, 30) + basic);
-    prders->MoveTo(QPoint(10, 152) + basic);
-    csmers->MemoryMoveTo(QPoint(500, 40) + basic);
-    csmers->MemDataMoveTo(QPoint(10, 494) + basic);
-    s1->move(QPoint(10, 30) + basic);
-    s2->move(QPoint(10, 70) + basic);
-    globalSpeed->move(QPoint(215, 30) + basic);
-    consumeSpeed->move(QPoint(250, 30) + basic);
-}
 

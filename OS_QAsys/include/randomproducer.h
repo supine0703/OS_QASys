@@ -11,24 +11,21 @@ class RandomProducer : public QObject
     RandomProducer(const RandomProducer&) = delete;
     RandomProducer& operator=(const RandomProducer&) = delete;
 public:
-    explicit RandomProducer(QWidget *parent=nullptr);
+    explicit RandomProducer(QWidget *parent = nullptr);
     void MoveTo(const QPoint& pos);
-    void Random();
-    void Produce(QWidget *parent=nullptr);
-    bool SendInc(BuffQue *buffer);
-    void Start() { stpFlg = false; }
-    void Stop() { stpFlg = true; }
+    void Produce(QWidget *parent);
+    bool SendInc(BuffQue *buffer); // send the instruction to buffer
 
 private:
-    ShowLabel *name;
-
+    ShowLabel *name; // whihc this RandomProducer
     ShowLabel *instruction = nullptr;
+    QPoint producePos; // where produce to
     bool have = false; // can't do
-    bool stpFlg = false;
 
 public:
-    static void ReSet();
+    static void ReSet(); // numGenerator reset 0
 private:
+    static int Random();
     static int numGenerator;
 
 signals:

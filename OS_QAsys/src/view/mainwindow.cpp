@@ -10,8 +10,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    this->setStyleSheet("font: italic 16pt \"Cascadia Mono\";");
-    setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint);
+    this->setStyleSheet(QString("font: italic %1pt \"%2\";").arg(FONT_SIZE).arg(_FONT_));
+
     // add menu list
     auto file = this->menuBar()->addMenu("&File");
 
@@ -26,8 +26,6 @@ MainWindow::MainWindow(QWidget *parent)
     };
 
     auto ShowMainMenu = [this, Geometry]() {
-        setMinimumSize(0, 0);
-        setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
         this->menuBar()->setVisible(false);
         auto startW = new StartWidget(this);
         this->setCentralWidget(startW);
@@ -37,8 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
             this->menuBar()->setVisible(true);
             auto showW = new ShowWidget(which, buff, mem, this);
             this->setCentralWidget(showW);
-            Geometry(showW->width(), showW->height());
-            setFixedSize(this->size());
+            Geometry(showW->width(), showW->height() + (FONT_SIZE << 1));
         });
     };
 

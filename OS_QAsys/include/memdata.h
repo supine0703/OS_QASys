@@ -11,8 +11,8 @@ class MemData : public QObject
 public:
     explicit MemData(int size, QWidget *parent = nullptr);
     void MoveTo(const QPoint& pos);
-    void Update();
-    void SetAlgorithm(const QString &str);
+    void Update(); // update the value to label
+    void SetAlgorithm(const QString &str); // ask me which algorithm
 
     int total = 0, hit = 0, miss = 0, replace = 0;
     float hitRate = 0, missRate = 0;

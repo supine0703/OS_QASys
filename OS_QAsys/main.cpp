@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication::setFont(QFont("Cascadia Mono", 16));
+    QApplication::setFont(QFont(_FONT_, FONT_SIZE));
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

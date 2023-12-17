@@ -3,53 +3,40 @@
 #include "buffque.h"
 #include <QThread>
 
-
-Producers::Producers(int num, BuffQue* buffer, QWidget *parent)
+Producers::Producers(int num, BuffQue *buffer, QWidget *parent)
     : QObject{parent}
     , ers(QVector<RandomProducer*>(num))
+    , bufque(buffer)
 {
+    Q_ASSERT(parent != nullptr);
     Q_ASSERT(0 < num  && num <= 10);
+    Q_ASSERT(buffer != nullptr);
     for (int i = 0; i < num; i++)
     {
         ers[i] = new RandomProducer(parent);
         ers[i]->MoveTo(QPoint(0, 80 * i));
-        connect(this, &Producers::start_produce, ers[i], &RandomProducer::Start);
-        connect(this, &Producers::start_produce, this, [this, i, parent]() {
-            ers[i]->Produce(parent);
+//        connect(this, &Producers::start_produce, ers[i], &RandomProducer::Start);
+        connect(this, &Producers::start_produce, this, [this, i]() {
+            if (!stpFlg) {
+                ers[i]->Produce(static_cast<QWidget*>(this->parent()));
+            }
+        });
+        connect(ers[i], &RandomProducer::produce_finished, this, [this, i]() {
+            productQue.enqueue(i);
+            emit try_send_to_buffer();
         });
         connect(ers[i], &RandomProducer::send_inc_finished, this, &Producers::start_produce);
-        connect(ers[i], &RandomProducer::produce_finished, this, [this, i, buffer]() {
-            que.enqueue(i);
-            ers[i]->Random();
-            if (ers[que.head()]->SendInc(buffer)) {
-                que.dequeue();
-            }
-        });
-        connect(buffer, &BuffQue::push_finished, this, [this, buffer]() {
-            if (!que.empty()) {
-                if (ers[que.head()]->SendInc(buffer))
-                    que.dequeue();
-            }
-        });
-        connect(buffer, &BuffQue::is_not_full, this, [this, buffer]() {
-            if (!que.empty()) {
-                if (ers[que.head()]->SendInc(buffer))
-                    que.dequeue();
-            }
-        });
     }
+    connect(bufque, &BuffQue::push_finished, this, &Producers::try_send_to_buffer);
+    connect(bufque, &BuffQue::is_not_full, this, &Producers::try_send_to_buffer);
+    connect(this, &Producers::try_send_to_buffer, this, [this]() {
+        if (!productQue.empty()) {
+            if (ers[productQue.head()]->SendInc(bufque)) {
+                productQue.dequeue();
+            }
+        }
+    });
 }
-
-//Producers::~Producers()
-//{
-//    for (int i = 0, end = ths.size(); i < end; i++)
-//    {
-//        ths[i]->quit();
-//        ths[i]->wait();
-//        ths[i]->deleteLater();
-//        ers[i]->deleteLater();
-//    }
-//}
 
 void Producers::MoveTo(const QPoint &pos)
 {
@@ -60,11 +47,11 @@ void Producers::MoveTo(const QPoint &pos)
 
 void Producers::Start()
 {
+    stpFlg = false;
     emit start_produce();
 }
 
 void Producers::Stop()
 {
-    for (auto& er : ers)
-        er->Stop();
+    stpFlg = true;
 }

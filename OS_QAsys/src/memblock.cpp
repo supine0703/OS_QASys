@@ -1,24 +1,14 @@
 #include "memblock.h"
 #include <QRandomGenerator>
 
-float MemBlock::spedRate = 1;
 int MemBlock::numGenerator = 0;
-
 MemBlock::MemBlock(QWidget *parent)
     : QObject{parent}
-    , blockNum(new ShowLabel(parent))
+    , blockNum(new ShowLabel(QString::number(numGenerator++), parent))
     , memBlock(new ShowLabel(parent))
     , addBlock(new ShowLabel(parent))
 {
-    blockNum->setText(QString::number(numGenerator++));
     this->Move(0, 0);
-}
-
-MemBlock::~MemBlock()
-{
-    delete blockNum;
-    delete memBlock;
-    delete addBlock;
 }
 
 void MemBlock::MarkRed()
@@ -55,28 +45,34 @@ void MemBlock::SetParent(QWidget *parent)
     addBlock->setParent(parent);
 }
 
-bool MemBlock::Replacement(ShowLabel *page)
+bool MemBlock::ReplacePage(ShowLabel *page)
 {
-    if (!page->ShowMoveTo(
+    if (!
+        page->ShowMoveTo(
             this->memBlock->pos(),
-            spedRate * QRandomGenerator::global()->bounded(500,1500))
+            QRandomGenerator::global()->bounded(900,2100) * spedRate
         )
-        return false;
+    ) return false;
     connect(page, &ShowLabel::animation_finished, this, [this, page]() {
+        page->disconnect(this);
         this->memBlock->deleteLater();
         this->memBlock = page;
         page->SetHexText(page->text().toInt(nullptr, 16) >> 4); // Inc to Page
-        page->disconnect(this);
-//        AddBlockUpdate();
-        emit replace_finished();
+        emit block_replace_finished();
     });
     return true;
 }
 
-void MemBlock::AddBlockUpdate()
+void MemBlock::UpdateAddBlock()
 {
     if (uab)
         uab->Update();
+}
+
+float MemBlock::spedRate = 1;
+void MemBlock::SetSpeed(int rate)
+{
+    spedRate = 0.4 + 0.016 * rate;
 }
 
 void MemBlock::ReSet()

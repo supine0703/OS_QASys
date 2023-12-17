@@ -2,44 +2,57 @@
 #define SHOWLABEL_H
 
 #include <QLabel>
+#include <QEasingCurve>
+
+#define SHOWLABEL_ANIMATION_DEFAULT_TIME 1000
 
 class ShowLabel : public QLabel
 {
     Q_OBJECT
 private:
-    bool flg = false, forcing = false;
+    bool flg = false; // flag showing animation.
     void Init();
+    void Mark(const QString&);
 
 public:
-    ShowLabel(QWidget *parent=nullptr);
+    ShowLabel(QWidget *parent = nullptr);
+    ShowLabel(const QString &text, QWidget *parent = nullptr);
+    ShowLabel(int number, QWidget *parent = nullptr);
 
-    ShowLabel(const QString &text, QWidget *parent=nullptr);
+    void SetHexText(int number); // set hex number in text.
 
-    ShowLabel(int number, QWidget *parent=nullptr);
+    void MarkRed();    // the word is marker in red.
+    void MarkBlue();   // the word is marker in blue.
+    void MarkPurple(); // the word is marker in purple.
+    void UnMark();     // restore default.
 
-    void SetHexText(int number);
-
-    void MarkRed();
-
-    void MarkBlue();
-
-    void UnMark();
-
-    bool ShowMoveTo(const QPoint &pos, int msecs = 1000);
-
-    bool ShowMove(int x, int y, int msecs = 1000);
-
-    void ShowForcingMove(int x, int y, int msecs = 1000);
-
-    bool ShowLoad(int msecs = 1000, const QString &color = "blue");
+    bool ShowMoveTo(
+        const QPoint &pos,
+        int msecs = SHOWLABEL_ANIMATION_DEFAULT_TIME,
+        QEasingCurve::Type = QEasingCurve::InOutSine
+    ); // show move to absolute coord.
+    bool ShowMove(
+        int x, int y,
+        int msecs = SHOWLABEL_ANIMATION_DEFAULT_TIME,
+        QEasingCurve::Type = QEasingCurve::InOutSine
+    ); // show move to relative coord.
+    void ShowForcingMove(
+        int x, int y,
+        int msecs = SHOWLABEL_ANIMATION_DEFAULT_TIME
+    ); // forcing show move to relative coord.
+    bool ShowLoad(
+        int msecs = SHOWLABEL_ANIMATION_DEFAULT_TIME,
+        const QString &color = "blue"
+    ); // show process of load.
 
 private:
-    void AnimationMoveTo(const QPoint &pos, int msecs);
-
+    void AnimationMoveTo(
+        const QPoint&, int, QEasingCurve::Type
+        ); // show animation about move.
     QPoint endPos;
 
 public:
-    static void SetSpeed(int rate) { speedRate = 0.2 + 0.048 * rate; }
+    static void SetSpeed(int rate);
 private:
     static float speedRate;
 

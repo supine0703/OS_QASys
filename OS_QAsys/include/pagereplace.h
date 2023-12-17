@@ -12,8 +12,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0;
-    int count = 0;
+    int p = 0; // pointer to the page to be replaced
+    int count = 0; // input which count
 };
 
 
@@ -24,8 +24,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0;
-    QVector<int> time;
+    int p = 0; // pointer to the page to be replaced
+    QVector<int> time; // time of each page from last access time
 };
 
 
@@ -36,8 +36,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0;
-    QVector<int> count;
+    int p = 0; // pointer to the page to be replaced
+    QVector<int> count; // count of all each page
 };
 
 
@@ -48,8 +48,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0;
-    QVector<bool> flag;
+    int p = 0; // pointer to the page to be replaced
+    QVector<bool> flag; // flag about is last visited
 };
 
 #endif // PAGEREPLACE_H

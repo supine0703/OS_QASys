@@ -21,18 +21,10 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    void MoveTo();
-
-    QSize base;
+    QSize view1Size;
     QPoint basic;
-    QPushButton *s1;
-    QPushButton *s2;
-    QSlider *globalSpeed;
-    QSlider *consumeSpeed;
 
-    BuffQue *que;
-    Consumers *csmers;
-    Producers *prders;
+    QWidget *view1;
 
 signals:
 

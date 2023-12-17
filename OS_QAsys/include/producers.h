@@ -22,12 +22,14 @@ public:
     void Stop();
 
 private:
+    BuffQue *bufque;
     QVector<RandomProducer*> ers;
-    QQueue<int> que;
+    QQueue<int> productQue;
+    bool stpFlg = true;
 
 signals:
     void start_produce();
-    void pro();
+    void try_send_to_buffer();
 };
 
 #endif // PRODUCERS_H

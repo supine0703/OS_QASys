@@ -19,6 +19,7 @@ MemData::MemData(int size, QWidget *parent)
     , missRateStr(new ShowLabel("Miss Rate:", parent))
     , missRateData(new ShowLabel("0.000", parent))
 {
+    Q_ASSERT(parent != nullptr);
     sizeStr->resize(160, 40);
     hitStr->resize(160, 40);
     missStr->resize(160, 40);

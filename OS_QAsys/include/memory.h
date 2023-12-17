@@ -17,13 +17,13 @@ class Memory : public QObject
     Memory(const Memory&) = delete;
     Memory& operator=(const Memory&) = delete;
 public:
-    explicit Memory(int blockNum, QWidget *parent=nullptr);
+    explicit Memory(int blockNum, QWidget *parent = nullptr);
     ~Memory();
     void MoveTo(const QPoint &pos);
     void MemDataMoveTo(const QPoint &pos);
     void MarkRed(int num);
     void UnMark(int num);
-    bool Replacement(ShowLabel *page, int num=-1);
+    bool Replace(ShowLabel *page, int num = -1);
     void SetInterface(UpdateAddBolck *uab);
     bool Busy() { return busy; }
 
@@ -31,11 +31,10 @@ private:
     bool busy = false;
     int whoMark = -1;
     QVector<MemBlock*> memBlocks;
-
     MemData *data;
 
 signals:
-    void replace_finish();
+    void mem_replace_finished();
 };
 
 #endif // MEMORY_H

@@ -6,10 +6,19 @@ Memory::Memory(int blockNum, QWidget *parent)
     : QObject{parent}
     , data(new MemData(blockNum, parent))
 {
+    Q_ASSERT(parent != nullptr);
     Q_ASSERT(4 <= blockNum && blockNum <= 64);
     memBlocks = QVector<MemBlock*>(blockNum);
     for (auto& mb : memBlocks)
+    {
         mb = new MemBlock(parent);
+        connect(mb, &MemBlock::block_replace_finished, this, [this, mb]() {
+            mb->UnMark();
+            mb->UpdateAddBlock();
+            busy = false;
+            emit mem_replace_finished();
+        });
+    }
     this->MoveTo(QPoint(0, 0));
     this->MemDataMoveTo(QPoint(0, 0));
 }
@@ -57,22 +66,15 @@ void Memory::UnMark(int num)
     whoMark = -1;
 }
 
-bool Memory::Replacement(ShowLabel *page, int num)
+bool Memory::Replace(ShowLabel *page, int num)
 {
     busy = true;
     if (num == -1)
         num = whoMark;
     Q_ASSERT(num != -1);
     Q_ASSERT(0 <= num && num < memBlocks.size());
-    if (!memBlocks[num]->Replacement(page))
+    if (!memBlocks[num]->ReplacePage(page))
         return false;
-    connect(memBlocks[num], &MemBlock::replace_finished, this, [this, num]() {
-        memBlocks[num]->UnMark();
-        memBlocks[num]->AddBlockUpdate();
-        memBlocks[num]->disconnect(this);
-        busy = false;
-        emit replace_finish();
-    });
     return true;
 }
 

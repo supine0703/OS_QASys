@@ -43,7 +43,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(${PROJECT_NAME}
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        ${UI_PATH}/startwidget.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET OS_QAsys APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -68,8 +67,19 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INC_NUM=1024
     PAGE_INC_NUM=16
     PAGE_MAX_NUM=64
-    CONFIG_FILE="${CMAKE_CURRENT_SOURCE_DIR}/share/config.txt"
+    _FONT_="Cascadia Mono"
+    FONT_SIZE=16
 )
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        CONFIG_FILE="${CMAKE_CURRENT_SOURCE_DIR}/share/config.txt"
+    )
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        CONFIG_FILE="./share/config.txt"
+    )
+endif()
 
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
