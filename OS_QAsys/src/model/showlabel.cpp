@@ -1,13 +1,6 @@
 #include "showlabel.h"
+#include <QMutex>
 #include <QPropertyAnimation>
-
-void ShowLabel::Init()
-{
-    this->resize(80, 40);
-    this->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-    this->UnMark();
-    endPos = this->pos();
-}
 
 void ShowLabel::Mark(const QString &color)
 {
@@ -18,21 +11,31 @@ void ShowLabel::Mark(const QString &color)
 
 ShowLabel::ShowLabel(QWidget *parent)
     : QLabel(parent)
+    , flg(new QMutex())
 {
-    this->Init();
+    this->resize(80, 40);
+    this->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+    this->UnMark();
+    endPos = this->pos();
 }
 
 ShowLabel::ShowLabel(const QString &text, QWidget *parent)
-    : QLabel(text, parent)
+    : ShowLabel(parent)
 {
-    this->Init();
+    this->setText(text);
 }
 
 ShowLabel::ShowLabel(int number, QWidget *parent)
-    : QLabel(parent)
+    : ShowLabel(parent)
 {
     SetHexText(number);
-    this->Init();
+}
+
+ShowLabel::~ShowLabel()
+{
+    flg->try_lock();
+    flg->unlock();
+    delete flg;
 }
 
 void ShowLabel::SetHexText(int number)
@@ -63,8 +66,8 @@ void ShowLabel::UnMark()
 
 bool ShowLabel::ShowMoveTo(const QPoint &pos, int msecs, QEasingCurve::Type curve)
 {
-    if (flg) return false;
-    flg = true;
+    if (!flg->try_lock())
+        return false;
     AnimationMoveTo(pos, msecs, curve);
     return true;
 }
@@ -76,41 +79,53 @@ bool ShowLabel::ShowMove(int x, int y, int msecs, QEasingCurve::Type curve)
 
 void ShowLabel::ShowForcingMove(int x, int y, int msecs)
 {
-    flg = true;
+    forcing = true;
     AnimationMoveTo(endPos + QPoint(x, y), msecs, QEasingCurve::OutCubic);
 }
 
 bool ShowLabel::ShowLoad(int msecs, const QString &color)
 {
-    if (flg) return false;
-    flg = true;
+    if (!flg->try_lock())
+        return false;
     this->setStyleSheet(QString("background: %1; color: %1;").arg(color));
-    QPropertyAnimation *animation = new QPropertyAnimation(this, "size");
-    animation->setDuration(msecs * speedRate); // time
+    animation = new QPropertyAnimation(this, "size", this);
     animation->setStartValue(QSize(1, this->height()));
     animation->setEndValue(this->size());
-//    animation->setEasingCurve(QEasingCurve::InOutQuad); // easing curve
+    animation->setDuration(msecs * speedRate); // time.
     animation->start();
     connect(animation, &QPropertyAnimation::finished, this, [this]() {
         this->MarkBlue();
-        flg = false;
-        emit animation_finished();
+        FinishAnimation();
     });
     return true;
 }
 
 void ShowLabel::AnimationMoveTo(const QPoint &pos, int msecs, QEasingCurve::Type curve)
 {
-    QPropertyAnimation *animation = new QPropertyAnimation(this, "pos");
-    animation->setDuration(msecs * speedRate);   // time
-    animation->setStartValue(this->pos()); // start pos
-    animation->setEndValue(endPos = pos);  // end pos
-    animation->setEasingCurve(curve);      // easing curve
+    if (forcing && animation != nullptr)
+    {
+        this->disconnect(animation);
+        animation->deleteLater();
+        forcing = false;
+    }
+    animation = new QPropertyAnimation(this, "pos", this);
+    animation->setStartValue(this->pos()); // start pos.
+    animation->setEndValue(endPos = pos);  // end pos.
+    animation->setEasingCurve(curve);      // easing curve.
+    animation->setDuration(msecs * speedRate);   // time.
     animation->start();
-    connect(animation, &QPropertyAnimation::finished, this, [this]() {
-        flg = false;
-        emit animation_finished();
-    });
+    connect(animation, &QPropertyAnimation::finished,
+            this, &ShowLabel::FinishAnimation);
+}
+
+void ShowLabel::FinishAnimation()
+{
+    this->disconnect(animation);
+    animation->deleteLater();
+    animation = nullptr;
+    flg->try_lock();
+    flg->unlock();
+    emit animation_finished();
 }
 
 float ShowLabel::speedRate = 1;

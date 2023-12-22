@@ -4,18 +4,14 @@
 #include <QObject>
 #include <QQueue>
 
-class QThread;
 class BuffQue;
 class RandomProducer;
 
 class Producers : public QObject
 {
     Q_OBJECT
-    Producers(const Producers&) = delete;
-    Producers& operator=(const Producers&) = delete;
 public:
     explicit Producers(int num, BuffQue *buffer, QWidget *parent = nullptr);
-//    ~Producers();
 
     void MoveTo(const QPoint& pos);
     void Start();

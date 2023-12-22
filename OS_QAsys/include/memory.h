@@ -4,6 +4,13 @@
 #include "memblock.h"
 #include "memdata.h"
 
+class UpdateAddBolck // implementing interface by different page replacement algorithms.
+{
+public:
+    virtual ~UpdateAddBolck() { }
+    virtual void Update() = 0;
+};
+
 class Memory : public QObject
 {
     friend class Consumers;
@@ -14,11 +21,8 @@ class Memory : public QObject
     friend class OPTConsumer;
 
     Q_OBJECT
-    Memory(const Memory&) = delete;
-    Memory& operator=(const Memory&) = delete;
 public:
     explicit Memory(int blockNum, QWidget *parent = nullptr);
-    ~Memory();
     void MoveTo(const QPoint &pos);
     void MemDataMoveTo(const QPoint &pos);
     void MarkRed(int num);
@@ -28,6 +32,7 @@ public:
     bool Busy() { return busy; }
 
 private:
+    UpdateAddBolck *uab = nullptr; // interface pointer.
     bool busy = false;
     int whoMark = -1;
     QVector<MemBlock*> memBlocks;

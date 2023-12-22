@@ -27,12 +27,12 @@ void RandomProducer::Produce(QWidget *parent)
     have = true;
     instruction = new ShowLabel(parent);
     instruction->move(producePos);
-    // produce once need average of 8s
+    // produce once need average of 8s.
     instruction->ShowLoad(QRandomGenerator::global()->bounded(1000, 15000));
     instruction->show();
     connect(instruction, &ShowLabel::animation_finished, this, [this]() {
-        instruction->raise();
         instruction->disconnect(this);
+        instruction->raise();
         instruction->SetHexText(this->Random());
         emit produce_finished();
     });
@@ -62,17 +62,17 @@ int RandomProducer::Random()
     count++;
     int inc;
     switch (count % 6)
-    { // according to the principle od locality
+    { // according to the principle od locality.
     case 0: // 0 ~ 1024
         inc = QRandomGenerator::global()->bounded(INC_NUM);
         break;
-    case 2: // random generation of previous address
+    case 2: // random generation of previous address.
         inc = QRandomGenerator::global()->bounded(last + 1);
         break;
-    case 4: // random generation of post address
+    case 4: // random generation of post address.
         inc = last + QRandomGenerator::global()->bounded(INC_NUM - last);
         break;
-    default: // generate next address
+    default: // generate next address.
         inc = (last + 1) & (INC_NUM - 1);
     }
     last = inc;

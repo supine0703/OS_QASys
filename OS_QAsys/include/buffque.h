@@ -8,8 +8,6 @@
 class BuffQue : public QObject
 {
     Q_OBJECT
-    BuffQue(const BuffQue&) = delete;
-    BuffQue& operator=(const BuffQue&) = delete;
 public:
     explicit BuffQue(int queSize, QWidget *parent = nullptr);
     bool Push(ShowLabel *page);
@@ -17,13 +15,13 @@ public:
     void MoveTo(const QPoint& pos);
 
 private:
-    QLabel *back;           // background
-    QPoint basicPos;        // where buffer in widget
+    QLabel *back;           // background.
+    QPoint basicPos;        // where buffer in widget.
     QVector<ShowLabel*> buffer;
-    QMutex mutex;           // let push or pop one-off finish
-    int head = 0, tail = 0; // head output, tail input
-    int count = 0;          // count in buffer
-    bool ibusy = false, obusy = false; // is busy before showing animation finished
+    QMutex mutex;           // let push or pop one-off finish.
+    int head = 0, tail = 0; // head output, tail input.
+    int count = 0;          // count in buffer.
+    bool ibusy = false, obusy = false; // is busy before showing animation finished.
     bool stpFlg = true;
 
 public:

@@ -38,13 +38,6 @@ void MemBlock::Move(int x, int y)
     this->MoveTo(pos);
 }
 
-void MemBlock::SetParent(QWidget *parent)
-{
-    blockNum->setParent(parent);
-    memBlock->setParent(parent);
-    addBlock->setParent(parent);
-}
-
 bool MemBlock::ReplacePage(ShowLabel *page)
 {
     if (!
@@ -57,16 +50,20 @@ bool MemBlock::ReplacePage(ShowLabel *page)
         page->disconnect(this);
         this->memBlock->deleteLater();
         this->memBlock = page;
-        page->SetHexText(page->text().toInt(nullptr, 16) >> 4); // Inc to Page
+        page->SetHexText(page->text().toInt(nullptr, 16) >> 4); // Inc to Page.
         emit block_replace_finished();
     });
     return true;
 }
 
-void MemBlock::UpdateAddBlock()
+int MemBlock::MemValue()
 {
-    if (uab)
-        uab->Update();
+    return memBlock->text() == "" ? MEM_NULL : memBlock->text().toInt(nullptr, 16);
+}
+
+void MemBlock::SetAddition(int info)
+{
+    addBlock->setText(QString::number(info));
 }
 
 float MemBlock::spedRate = 1;

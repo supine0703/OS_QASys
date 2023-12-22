@@ -4,65 +4,80 @@
 
 MemData::MemData(int size, QWidget *parent)
     : QObject{parent}
-    , sizeStr(new ShowLabel(QString("Size: %1KB").arg(size), parent))
-    , algorithmStr(new ShowLabel(parent))
-    , hitStr(new ShowLabel("Hit:", parent))
-    , hitData(new ShowLabel("0", parent))
-    , missStr(new ShowLabel("Miss:", parent))
-    , missData(new ShowLabel("0", parent))
-    , totalStr(new ShowLabel("Total:", parent))
-    , totalData(new ShowLabel("0", parent))
-    , replaceStr(new ShowLabel("Replace:", parent))
-    , replaceData(new ShowLabel("0", parent))
-    , hitRateStr(new ShowLabel("Hit Rate:", parent))
-    , hitRateData(new ShowLabel("0.000", parent))
-    , missRateStr(new ShowLabel("Miss Rate:", parent))
-    , missRateData(new ShowLabel("0.000", parent))
+    , memSize(size)
+    , info(new DataLabel(this, parent, QString("Size: %1KB").arg(size)))
+    , hitLabel(new DataLabel(this, parent, "Hit:", "0"))
+    , missLabel(new DataLabel(this, parent, "Miss:", "0"))
+    , totalLabel(new DataLabel(this, parent, "Total:", "0"))
+    , replaceLabel(new DataLabel(this, parent, "Replace:", "0"))
+    , hitRateLabel(new DataLabel(this, parent, "Hit Rate:", "0.000"))
+    , missRateLabel(new DataLabel(this, parent, "Miss Rate:", "0.000"))
 {
     Q_ASSERT(parent != nullptr);
-    sizeStr->resize(160, 40);
-    hitStr->resize(160, 40);
-    missStr->resize(160, 40);
-    totalStr->resize(160, 40);
-    replaceStr->resize(160, 40);
-    hitRateStr->resize(160, 40);
-    missRateStr->resize(160, 40);
+    info->Mark();
     MoveTo(QPoint(0, 0));
-    sizeStr->MarkBlue();
-    algorithmStr->MarkBlue();
-}
-
-void MemData::MoveTo(const QPoint &pos)
-{
-    QPoint y(0, 50), x(158, 0);
-    int i = 0;
-    sizeStr->move(pos + y * i);
-    algorithmStr->move(pos + x + y * i++);
-    totalStr->move(pos + y * i);
-    totalData->move(pos + x + y * i++);
-    hitStr->move(pos + y * i);
-    hitData->move(pos + x + y * i++);
-    missStr->move(pos + y * i);
-    missData->move(pos + x + y * i++);
-    replaceStr->move(pos + y * i);
-    replaceData->move(pos + x + y * i++);
-    hitRateStr->move(pos + y * i);
-    hitRateData->move(pos + x + y * i++);
-    missRateStr->move(pos + y * i);
-    missRateData->move(pos + x + y * i++);
 }
 
 void MemData::Update()
 {
-    hitData->setText(QString::number(hit));
-    missData->setText(QString::number(miss));
-    totalData->setText(QString::number(total));
-    replaceData->setText(QString::number(replace));
-    hitRateData->setText(QString::number(hitRate, 'f', 3));
-    missRateData->setText(QString::number(missRate, 'f', 3));
+    int total = hit + miss;
+    replace = miss - memSize;
+    if (replace < 0)
+        replace = 0;
+    hitLabel->Update(QString::number(hit));
+    missLabel->Update(QString::number(miss));
+    totalLabel->Update(QString::number(total));
+    replaceLabel->Update(QString::number(replace));
+    hitRateLabel->Update(QString::number(1.0 * hit / total, 'f', 3));
+    missRateLabel->Update(QString::number(1.0 * miss / total, 'f', 3));
 }
 
 void MemData::SetAlgorithm(const QString& str)
 {
-    algorithmStr->setText(str);
+    info->Update(str);
+}
+
+void MemData::MoveTo(const QPoint &pos)
+{
+    QPoint y(0, 50);
+    int i = 0;
+    auto dlabels = this->findChildren<DataLabel*>();
+    for(auto dl : dlabels)
+        dl->MoveTo(pos + y * i++);
+}
+
+void MemData::HitPage()
+{
+    hit++;
+}
+
+void MemData::MissPage()
+{
+    miss++;
+}
+
+MemData::DataLabel::DataLabel(QObject *tp, QWidget *p, const QString &s, const QString &d)
+    : QObject{tp}
+    , str(new ShowLabel(s, p))
+    , data(new ShowLabel(d, p))
+{
+    str->resize(160, 40);
+    this->MoveTo(QPoint(0, 0));
+}
+
+void MemData::DataLabel::MoveTo(const QPoint &pos)
+{
+    str->move(pos);
+    data->move(pos + QPoint(158, 0));
+}
+
+void MemData::DataLabel::Update(const QString &dat)
+{
+    data->setText(dat);
+}
+
+void MemData::DataLabel::Mark()
+{
+    str->MarkBlue();
+    data->MarkBlue();
 }

@@ -14,19 +14,14 @@ Memory::Memory(int blockNum, QWidget *parent)
         mb = new MemBlock(parent);
         connect(mb, &MemBlock::block_replace_finished, this, [this, mb]() {
             mb->UnMark();
-            mb->UpdateAddBlock();
+            if (uab)
+                uab->Update();
             busy = false;
             emit mem_replace_finished();
         });
     }
     this->MoveTo(QPoint(0, 0));
     this->MemDataMoveTo(QPoint(0, 0));
-}
-
-Memory::~Memory()
-{
-    for (auto& mb : memBlocks)
-        delete mb;
 }
 
 void Memory::MoveTo(const QPoint &pos)
@@ -80,6 +75,5 @@ bool Memory::Replace(ShowLabel *page, int num)
 
 void Memory::SetInterface(UpdateAddBolck *uab)
 {
-    for (auto& mb : memBlocks)
-        mb->SetInterface(uab);
+    this->uab = uab;
 }

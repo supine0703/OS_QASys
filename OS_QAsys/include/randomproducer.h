@@ -8,22 +8,20 @@ class BuffQue;
 class RandomProducer : public QObject
 {
     Q_OBJECT
-    RandomProducer(const RandomProducer&) = delete;
-    RandomProducer& operator=(const RandomProducer&) = delete;
 public:
     explicit RandomProducer(QWidget *parent = nullptr);
     void MoveTo(const QPoint& pos);
     void Produce(QWidget *parent);
-    bool SendInc(BuffQue *buffer); // send the instruction to buffer
+    bool SendInc(BuffQue *buffer); // send the instruction to buffer.
 
 private:
-    ShowLabel *name; // whihc this RandomProducer
+    ShowLabel *name; // whihc this RandomProducer.
     ShowLabel *instruction = nullptr;
-    QPoint producePos; // where produce to
-    bool have = false; // can't do
+    QPoint producePos; // where produce to.
+    bool have = false; // can't do.
 
 public:
-    static void ReSet(); // numGenerator reset 0
+    static void ReSet(); // numGenerator reset 0.
 private:
     static int Random();
     static int numGenerator;

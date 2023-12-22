@@ -15,7 +15,7 @@ BuffQue::BuffQue(int queSize, QWidget *parent)
 
 bool BuffQue::Push(ShowLabel *page)
 {
-    if (count == buffer.size()) // is full
+    if (count == buffer.size()) // is full.
         return false;
 
     mutex.lock();
@@ -28,20 +28,20 @@ bool BuffQue::Push(ShowLabel *page)
 
     bool empty = (count == 0);
     // push {
-    buffer[tail] = page; // push
+    buffer[tail] = page; // push.
     tail = (tail + 1) % buffer.size();
 //    count++; // }
 
-    // show pushing animation
+    // show pushing animation.
     page->MarkRed();
-    // move to buffer's position which belong
+    // move to buffer's position which belong.
     if (!page->ShowMoveTo(basicPos + QPoint(0, count * 40), 1000 * speedRate))
         Q_ASSERT_X(false, "class BuffQue", "try show animation which showing");
     connect(page, &ShowLabel::animation_finished, this, [this, empty, page]() {
         page->disconnect(this);
         page->UnMark();
-        count++; // push successfully
-        ibusy = false; // animation finished
+        count++; // push successfully.
+        ibusy = false; // animation finished.
         emit push_finished();
         if (empty) {
             emit is_not_empty();
@@ -54,7 +54,7 @@ bool BuffQue::Push(ShowLabel *page)
 
 bool BuffQue::Pop(ShowLabel *&page)
 {
-    if (count == 0) // is empty
+    if (count == 0) // is empty.
         return false;
 
     mutex.lock();
@@ -67,20 +67,20 @@ bool BuffQue::Pop(ShowLabel *&page)
 
     bool full = (count == buffer.size());
     // pop {
-    page = buffer[head]; // pop
+    page = buffer[head]; // pop.
     head = (head + 1) % buffer.size();
-    count--; // } push successfully
+    count--; // } push successfully.
 
-    // show poping animation
+    // show poping animation.
     page->MarkPurple();
     for (int i = head; i != tail; i = (i + 1) % buffer.size())
-        buffer[i]->ShowForcingMove(0, -40, 1000 * speedRate); // all move up 40
+        buffer[i]->ShowForcingMove(0, -40, 1000 * speedRate); // all move up 40.
     if (!page->ShowMove(80, 0, 596 * speedRate, QEasingCurve::OutExpo))
         Q_ASSERT_X(false, "class BuffQue", "try show animation which showing");
 
     connect(page, &ShowLabel::animation_finished, this, [this, full, page]() {
         page->disconnect(this);
-        obusy = false; // animation finished
+        obusy = false; // animation finished.
         emit pop_finished();
         if (full) {
             emit is_not_full();
@@ -95,8 +95,8 @@ void BuffQue::MoveTo(const QPoint &pos)
 {
     basicPos = pos + QPoint(2, 2);
     back->move(pos);
-    int cunt = 0; // calculate the relativate position
-    if (head == tail && !count) // is empty
+    int cunt = 0; // calculate the relativate position.
+    if (head == tail && !count) // is empty.
         return;
     buffer[head]->move(basicPos + QPoint(0, cunt++ * 40));
     for (int i = (head + 1) % buffer.size(); i != tail; i = (i + 1) % buffer.size())

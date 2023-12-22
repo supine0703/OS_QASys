@@ -1,9 +1,8 @@
 #ifndef PAGEREPLACE_H
 #define PAGEREPLACE_H
 
-#include "memblock.h"
+#include "memory.h"
 #include "consumers.h"
-
 
 class FIFOConsumer : public Consumers, public UpdateAddBolck
 { // 先进先出算法
@@ -12,8 +11,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced
-    int count = 0; // input which count
+    int p = 0; // pointer to the page to be replaced.
+    int count = 0; // input which count.
 };
 
 
@@ -24,8 +23,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced
-    QVector<int> time; // time of each page from last access time
+    int p = 0; // pointer to the page to be replaced.
+    QVector<int> time; // time of each page from last access time.
 };
 
 
@@ -36,8 +35,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced
-    QVector<int> count; // count of all each page
+    int p = 0; // pointer to the page to be replaced.
+    QVector<int> count; // count of all each page.
 };
 
 
@@ -48,8 +47,8 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced
-    QVector<bool> flag; // flag about is last visited
+    int p = 0; // pointer to the page to be replaced.
+    QVector<bool> flag; // flag about is last visited.
 };
 
 #endif // PAGEREPLACE_H

@@ -1,13 +1,12 @@
 #include "showwidget.h"
+
 #include "buffque.h"
 #include "producers.h"
 #include "pagereplace.h"
 #include "randomproducer.h"
+
 #include <QPushButton>
 #include <QSlider>
-#include <QThread>
-#include <QEventLoop>
-#include <QDialog>
 
 #define GLOBAL_SPEED 1
 #define BUFFQUE_SPEED 49
@@ -126,5 +125,3 @@ void ShowWidget::resizeEvent(QResizeEvent *event)
         (this->width() - view1Size.width()) >> 1,
         (this->height() - view1Size.height()) >> 1);
 }
-
-

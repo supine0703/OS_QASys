@@ -11,23 +11,20 @@ class Memory;
 class Consumers : public QObject
 {
     Q_OBJECT
-    Consumers(const Consumers&) = delete;
-    Consumers& operator=(const Consumers&) = delete;
 public:
     explicit Consumers(int size, BuffQue* buffer, QWidget *parent = nullptr);
     virtual ~Consumers() { }
     void MemoryMoveTo(const QPoint& pos);
     void MemDataMoveTo(const QPoint& pos);
-    void Start(); // start to consume
-    void Stop();  // stop to consume
+    void Start(); // start to consume.
+    void Stop();  // stop to consume.
 
 private:
-    void ConctUpdate(); // need update data about Memory if consume finished
+    void ConctUpdate(); // need update data about Memory if consume finished.
     bool MissingPage();
-    void UpdateData();
 
 
-    ShowLabel *label; // use to receive what buffer pop
+    ShowLabel *label; // use to receive what buffer pop.
     bool stpFlg = true;
 
 protected:

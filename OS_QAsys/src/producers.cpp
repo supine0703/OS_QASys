@@ -15,7 +15,6 @@ Producers::Producers(int num, BuffQue *buffer, QWidget *parent)
     {
         ers[i] = new RandomProducer(parent);
         ers[i]->MoveTo(QPoint(0, 80 * i));
-//        connect(this, &Producers::start_produce, ers[i], &RandomProducer::Start);
         connect(this, &Producers::start_produce, this, [this, i]() {
             if (!stpFlg) {
                 ers[i]->Produce(static_cast<QWidget*>(this->parent()));

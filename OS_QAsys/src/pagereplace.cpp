@@ -1,5 +1,4 @@
 #include "pagereplace.h"
-#include "memory.h"
 
 FIFOConsumer::FIFOConsumer(int size, BuffQue *buffer, QWidget *parent)
     : Consumers(size, buffer, parent)
@@ -7,7 +6,7 @@ FIFOConsumer::FIFOConsumer(int size, BuffQue *buffer, QWidget *parent)
     mem->data->SetAlgorithm("FIFO");
     mem->SetInterface(this);
     for (auto& m : mem->memBlocks)
-        m->addBlock->setText("0");
+        m->SetAddition(0);
 }
 
 void FIFOConsumer::Update()
@@ -18,7 +17,7 @@ void FIFOConsumer::Update()
             mem->MarkRed(hitPage);
         return;
     }
-    mem->memBlocks[p]->addBlock->setText(QString::number(++count));
+    mem->memBlocks[p]->SetAddition(++count);
     p = (p + 1) % mem->memBlocks.size();
     mem->MarkRed(p);
 }
@@ -32,7 +31,7 @@ LRUConsumer::LRUConsumer(int size, BuffQue *buffer, QWidget *parent)
     mem->SetInterface(this);
     time = QVector<int>(mem->memBlocks.size(), 0);
     for (auto& m : mem->memBlocks)
-        m->addBlock->setText("0");
+        m->SetAddition(0);
 }
 
 void LRUConsumer::Update()
@@ -43,7 +42,7 @@ void LRUConsumer::Update()
     for (int i = 0, end = mem->memBlocks.size(), max = 0; i < end; i++)
     {
         time[i]++;
-        mem->memBlocks[i]->addBlock->setText(QString::number(time[i]));
+        mem->memBlocks[i]->SetAddition(time[i]);
         if (missFlg && time[i] > max)
         {
             max = time[i];
@@ -55,7 +54,7 @@ void LRUConsumer::Update()
     else
     {
         time[hitPage] = 0;
-        mem->memBlocks[hitPage]->addBlock->setText("0");
+        mem->memBlocks[hitPage]->SetAddition(0);
         if (mem->whoMark == hitPage)
             mem->MarkRed(hitPage);
     }
@@ -71,25 +70,24 @@ LFUConsumer::LFUConsumer(int size, BuffQue *buffer, QWidget *parent)
     mem->SetInterface(this);
     count = QVector<int>(PAGE_MAX_NUM + 1, 0);
     for (auto& m : mem->memBlocks)
-        m->addBlock->setText("0");
+        m->SetAddition(0);
 }
 
 void LFUConsumer::Update()
 {
     auto index = [this](int num) {
-        return
-            (mem->memBlocks[num]->memBlock->text() == "") ? PAGE_MAX_NUM :
-                   mem->memBlocks[num]->memBlock->text().toInt(nullptr, 16);
+        int value = mem->memBlocks[num]->MemValue();
+        return (value == MEM_NULL) ? PAGE_MAX_NUM : value;
     };
     if (hitPage != -1)
     {
         int tmp = ++count[index(hitPage)];
-        mem->memBlocks[hitPage]->addBlock->setText(QString::number(tmp));
+        mem->memBlocks[hitPage]->SetAddition(tmp);
         if (mem->whoMark == hitPage)
             mem->MarkRed(hitPage);
         return;
     }
-    mem->memBlocks[p]->addBlock->setText(QString::number(++count[index(p)]));
+    mem->memBlocks[p]->SetAddition(++count[index(p)]);
     p = 0;
     for (int i = 0, end = mem->memBlocks.size(), min = 0x7fffffff; i < end; i++)
     {
@@ -114,7 +112,7 @@ NRUConsumer::NRUConsumer(int size, BuffQue *buffer, QWidget *parent)
     mem->SetInterface(this);
     flag = QVector<bool>(mem->memBlocks.size(), 0);
     for (auto& m : mem->memBlocks)
-        m->addBlock->setText("0");
+        m->SetAddition(0);
 }
 
 void NRUConsumer::Update()
@@ -122,18 +120,18 @@ void NRUConsumer::Update()
     if (hitPage != -1)
     {
         flag[hitPage] = 1;
-        mem->memBlocks[hitPage]->addBlock->setText("1");
+        mem->memBlocks[hitPage]->SetAddition(1);
         if (mem->whoMark == hitPage)
             mem->MarkRed(hitPage);
         return;
     }
     flag[p] = 1;
-    mem->memBlocks[p]->addBlock->setText("1");
+    mem->memBlocks[p]->SetAddition(1);
     p = (p + 1) % flag.size();
     while (flag[p])
     {
         flag[p] = 0;
-        mem->memBlocks[p]->addBlock->setText("0");
+        mem->memBlocks[p]->SetAddition(0);
         p = (p + 1) % flag.size();
     }
     mem->MarkRed(p);
