@@ -8,7 +8,8 @@ class ShowWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit ShowWidget(int which, int bufSize, int memSize, QWidget *parent = nullptr);
+    explicit ShowWidget(
+        int way, int which, int bufSize, int memSize, QWidget *parent = nullptr);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

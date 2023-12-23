@@ -5,13 +5,14 @@
 #include <QQueue>
 
 class BuffQue;
-class RandomProducer;
+class ShowLabel;
+class IncProducer;
 
 class Producers : public QObject
 {
     Q_OBJECT
 public:
-    explicit Producers(int num, BuffQue *buffer, QWidget *parent = nullptr);
+    explicit Producers(int num, BuffQue *buffer, int which, QWidget *parent = nullptr);
 
     void MoveTo(const QPoint& pos);
     void Start();
@@ -19,7 +20,8 @@ public:
 
 private:
     BuffQue *bufque;
-    QVector<RandomProducer*> ers;
+    QVector<IncProducer*> ers;
+    QVector<ShowLabel*> wayLs;
     QQueue<int> productQue;
     bool stpFlg = true;
 

@@ -1,4 +1,5 @@
 #include "pagereplace.h"
+#include "recordwidget.h"
 
 FIFOConsumer::FIFOConsumer(int size, BuffQue *buffer, QWidget *parent)
     : Consumers(size, buffer, parent)
@@ -11,10 +12,10 @@ FIFOConsumer::FIFOConsumer(int size, BuffQue *buffer, QWidget *parent)
 
 void FIFOConsumer::Update()
 {
-    if (hitPage != -1)
+    if (hitPageBlock != MEM_NULL)
     {
-        if (mem->whoMark == hitPage)
-            mem->MarkRed(hitPage);
+        if (mem->whoMark == hitPageBlock)
+            mem->MarkRed(hitPageBlock);
         return;
     }
     mem->memBlocks[p]->SetAddition(++count);
@@ -36,7 +37,7 @@ LRUConsumer::LRUConsumer(int size, BuffQue *buffer, QWidget *parent)
 
 void LRUConsumer::Update()
 {
-    bool missFlg = (hitPage == -1);
+    bool missFlg = (hitPageBlock == MEM_NULL);
     if (missFlg)
         time[p] = -1;
     for (int i = 0, end = mem->memBlocks.size(), max = 0; i < end; i++)
@@ -53,10 +54,10 @@ void LRUConsumer::Update()
         mem->MarkRed(p);
     else
     {
-        time[hitPage] = 0;
-        mem->memBlocks[hitPage]->SetAddition(0);
-        if (mem->whoMark == hitPage)
-            mem->MarkRed(hitPage);
+        time[hitPageBlock] = 0;
+        mem->memBlocks[hitPageBlock]->SetAddition(0);
+        if (mem->whoMark == hitPageBlock)
+            mem->MarkRed(hitPageBlock);
     }
 }
 
@@ -79,17 +80,17 @@ void LFUConsumer::Update()
         int value = mem->memBlocks[num]->MemValue();
         return (value == MEM_NULL) ? PAGE_MAX_NUM : value;
     };
-    if (hitPage != -1)
+    if (hitPageBlock != MEM_NULL)
     {
-        int tmp = ++count[index(hitPage)];
-        mem->memBlocks[hitPage]->SetAddition(tmp);
-        if (mem->whoMark == hitPage)
-            mem->MarkRed(hitPage);
+        int tmp = ++count[index(hitPageBlock)];
+        mem->memBlocks[hitPageBlock]->SetAddition(tmp);
+        if (mem->whoMark == hitPageBlock)
+            mem->MarkRed(hitPageBlock);
         return;
     }
     mem->memBlocks[p]->SetAddition(++count[index(p)]);
     p = 0;
-    for (int i = 0, end = mem->memBlocks.size(), min = 0x7fffffff; i < end; i++)
+    for (int i = 0, end = mem->memBlocks.size(), min = INT_MAX; i < end; i++)
     {
         int tmp = index(i);
         if (count[tmp] < min)
@@ -117,12 +118,12 @@ NRUConsumer::NRUConsumer(int size, BuffQue *buffer, QWidget *parent)
 
 void NRUConsumer::Update()
 {
-    if (hitPage != -1)
+    if (hitPageBlock != MEM_NULL)
     {
-        flag[hitPage] = 1;
-        mem->memBlocks[hitPage]->SetAddition(1);
-        if (mem->whoMark == hitPage)
-            mem->MarkRed(hitPage);
+        flag[hitPageBlock] = 1;
+        mem->memBlocks[hitPageBlock]->SetAddition(1);
+        if (mem->whoMark == hitPageBlock)
+            mem->MarkRed(hitPageBlock);
         return;
     }
     flag[p] = 1;
@@ -134,5 +135,54 @@ void NRUConsumer::Update()
         mem->memBlocks[p]->SetAddition(0);
         p = (p + 1) % flag.size();
     }
+    mem->MarkRed(p);
+}
+
+OPTConsumer::OPTConsumer(int size, BuffQue *buffer, QWidget *parent)
+    : Consumers(size, buffer, parent)
+{
+    mem->data->SetAlgorithm("OPT");
+    mem->SetInterface(this);
+    next = QVector<int>(mem->memBlocks.size(), INT_MAX);
+    for (auto& m : mem->memBlocks)
+        m->SetAddition(MEM_NULL);
+}
+
+void OPTConsumer::Update()
+{
+    int n;
+    if (hitPageBlock == MEM_NULL)
+        n = p;
+    else
+    {
+        n = hitPageBlock;
+        mem->UnMark(p);
+    }
+    next[n] = RECD()(mem->memBlocks[n]->MemValue());
+    mem->memBlocks[n]->SetAddition(next[n]);
+    next[n]++;
+
+
+    for (int i = 0, end = mem->memBlocks.size(), max = 0; i < end; i++)
+    {
+        if (next[i] == INT_MAX)
+        {
+            p = i;
+            break;
+        }
+        next[i]--;
+//        if (next[i] == 1)
+//        {
+//            p = i;
+//            max = INT_MAX;
+//        }
+        mem->memBlocks[i]->SetAddition(next[i]);
+        if (next[i] > max)
+        {
+            p = i;
+            max = next[i];
+        }
+    }
+
     mem->MarkRed(p);
 }

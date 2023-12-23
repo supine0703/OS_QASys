@@ -10,5 +10,18 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+private:
+    QDockWidget *recdDock;
+    int cpWay, cpWhich, cpBuff, cpMem;
+    int whichWindow;
+    bool once = true;
+
+    void SaveStateInfo();
+
+    // QWidget interface
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
 };
 #endif // MAINWINDOW_H

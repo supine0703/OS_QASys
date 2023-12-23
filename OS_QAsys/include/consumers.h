@@ -29,7 +29,7 @@ private:
 
 protected:
     Memory* mem;
-    int hitPage = -1;
+    int hitPageBlock = -1;
 
 signals:
     void start_consumer();

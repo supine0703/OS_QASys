@@ -18,11 +18,15 @@ public:
 private slots:
     void on_pushButton_clicked();
 
+    void on_comboBox_way_currentIndexChanged(int index);
+
+    void on_toolButton_path_clicked();
+
 private:
     Ui::StartWidget *ui;
 
 signals:
-    void start(int, int, int);
+    void start(int, int, int, int);
 };
 
 #endif // STARTWIDGET_H

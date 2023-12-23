@@ -11,7 +11,7 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced.
+    int p = 0; // pointer to the page next to be replaced.
     int count = 0; // input which count.
 };
 
@@ -23,7 +23,7 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced.
+    int p = 0; // pointer to the page next to be replaced.
     QVector<int> time; // time of each page from last access time.
 };
 
@@ -35,7 +35,7 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced.
+    int p = 0; // pointer to the page next to be replaced.
     QVector<int> count; // count of all each page.
 };
 
@@ -47,8 +47,19 @@ public:
     void Update() override;
 
 private:
-    int p = 0; // pointer to the page to be replaced.
+    int p = 0; // pointer to the page next to be replaced.
     QVector<bool> flag; // flag about is last visited.
+};
+
+class OPTConsumer : public Consumers, public UpdateAddBolck
+{ // 最佳置换算法
+public:
+    OPTConsumer(int size, BuffQue* buffer, QWidget *parent = nullptr);
+    void Update() override;
+
+private:
+    int p = 0; // pointer to the page next to be replaced.
+    QVector<int> next; // time of each page from next visited.
 };
 
 #endif // PAGEREPLACE_H

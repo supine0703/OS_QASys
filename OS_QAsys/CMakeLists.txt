@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(OS_QAsys VERSION 0.2 LANGUAGES CXX)
+project(OS_QAsys VERSION 0.3 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -62,24 +62,23 @@ else()
     endif()
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(SHARE_FILES_PATH "${CMAKE_CURRENT_SOURCE_DIR}/share")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(SHARE_FILES_PATH "./share")
+endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     INC_NUM=1024
+    PAGE_INC_BIT=4
     PAGE_INC_NUM=16
     PAGE_MAX_NUM=64
     _FONT_="Cascadia Mono"
     FONT_SIZE=16
+    SHARE_PATH="${SHARE_FILES_PATH}"
+    CONFIG_INI="${SHARE_FILES_PATH}/config.ini"
 )
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        CONFIG_FILE="${CMAKE_CURRENT_SOURCE_DIR}/share/config.txt"
-    )
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        CONFIG_FILE="./share/config.txt"
-    )
-endif()
 
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

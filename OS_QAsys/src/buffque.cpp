@@ -7,7 +7,6 @@ BuffQue::BuffQue(int queSize, QWidget *parent)
     Q_ASSERT(parent != nullptr);
     Q_ASSERT(4 <= queSize && queSize <= 24);
     back->resize(84, queSize * 40 + 4);
-//    back->setStyleSheet("border: 2px solid gray;");
     back->setStyleSheet("background: gray;");
     buffer = QVector<ShowLabel*>(queSize);
     this->MoveTo(QPoint(0, 0));

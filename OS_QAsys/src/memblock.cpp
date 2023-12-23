@@ -1,4 +1,5 @@
 #include "memblock.h"
+#include "recordwidget.h"
 #include <QRandomGenerator>
 
 int MemBlock::numGenerator = 0;
@@ -50,7 +51,9 @@ bool MemBlock::ReplacePage(ShowLabel *page)
         page->disconnect(this);
         this->memBlock->deleteLater();
         this->memBlock = page;
-        page->SetHexText(page->text().toInt(nullptr, 16) >> 4); // Inc to Page.
+        int inc;
+        RECD() >> inc; // consume inc
+        page->SetHexText(inc >> PAGE_INC_BIT); // Inc to Page.
         emit block_replace_finished();
     });
     return true;
@@ -58,12 +61,12 @@ bool MemBlock::ReplacePage(ShowLabel *page)
 
 int MemBlock::MemValue()
 {
-    return memBlock->text() == "" ? MEM_NULL : memBlock->text().toInt(nullptr, 16);
+    return memBlock->text().isEmpty() ? MEM_NULL : memBlock->text().toInt(nullptr, 16);
 }
 
 void MemBlock::SetAddition(int info)
 {
-    addBlock->setText(QString::number(info));
+    addBlock->setText(info != MEM_NULL ? QString::number(info) : "NOP");
 }
 
 float MemBlock::spedRate = 1;

@@ -114,8 +114,7 @@ void ShowLabel::AnimationMoveTo(const QPoint &pos, int msecs, QEasingCurve::Type
     animation->setEasingCurve(curve);      // easing curve.
     animation->setDuration(msecs * speedRate);   // time.
     animation->start();
-    connect(animation, &QPropertyAnimation::finished,
-            this, &ShowLabel::FinishAnimation);
+    connect(animation, &QPropertyAnimation::finished, this, &ShowLabel::FinishAnimation);
 }
 
 void ShowLabel::FinishAnimation()

@@ -3,7 +3,8 @@
 #include "buffque.h"
 #include "producers.h"
 #include "pagereplace.h"
-#include "randomproducer.h"
+#include "incproducer.h"
+#include "myenum.h"
 
 #include <QPushButton>
 #include <QSlider>
@@ -12,7 +13,7 @@
 #define BUFFQUE_SPEED 49
 #define CONSUME_SPEED 35
 
-ShowWidget::ShowWidget(int which, int bufSize, int memSize, QWidget *parent)
+ShowWidget::ShowWidget(int way, int which, int bufSize, int memSize, QWidget *parent)
     : QWidget{parent}
     , view1Size(((memSize >> 4) + 2 + !(!(memSize & 0xf))) * 250, 830)
     , view1(new QWidget(this))
@@ -21,7 +22,7 @@ ShowWidget::ShowWidget(int which, int bufSize, int memSize, QWidget *parent)
 
     // number reset
     MemBlock::ReSet();
-    RandomProducer::ReSet();
+    IncProducer::ReSet();
 
     // new space for modules to show
     QPushButton *pDo = new QPushButton("Producers DO", view1);
@@ -33,24 +34,28 @@ ShowWidget::ShowWidget(int which, int bufSize, int memSize, QWidget *parent)
     QLabel *buffQueSpeedValue = new QLabel("0", view1);
     QLabel *consumeSpeedValue = new QLabel("0", view1);
     BuffQue *buffer = new BuffQue(bufSize, view1);
-    Producers *prders = new Producers(4, buffer, view1);
+    Producers *prders = new Producers(4, buffer, way, view1);
     Consumers *csmers;
     switch (which)
     {
-    case 0: {
+    case MyE::FIFO: {
         csmers = new FIFOConsumer(memSize, buffer, view1);
         break;
     }
-    case 1: {
+    case MyE::LRU: {
         csmers = new LRUConsumer(memSize, buffer, view1);
         break;
     }
-    case 2: {
+    case MyE::LFU: {
         csmers = new LFUConsumer(memSize, buffer, view1);
         break;
     }
-    case 3: {
+    case MyE::NRU: {
         csmers = new NRUConsumer(memSize, buffer, view1);
+        break;
+    }
+    case MyE::OPT: {
+        csmers = new OPTConsumer(memSize, buffer, view1);
         break;
     }
     default: {
@@ -113,11 +118,13 @@ ShowWidget::ShowWidget(int which, int bufSize, int memSize, QWidget *parent)
         MemBlock::SetSpeed(value);
         consumeSpeedValue->setText(QString::number(99 - value));
     });
+
     // something need do after connect
     globalSpeed->setValue(GLOBAL_SPEED);
     consumeSpeed->setValue(CONSUME_SPEED);
     buffQueSpeed->setValue(BUFFQUE_SPEED);
 }
+
 
 void ShowWidget::resizeEvent(QResizeEvent *event)
 {

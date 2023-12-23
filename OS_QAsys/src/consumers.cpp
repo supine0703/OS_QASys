@@ -66,7 +66,7 @@ bool Consumers::MissingPage()
         if (mem->memBlocks[i]->MemValue() == MEM_NULL)
             break; // if memory is not full.
         else if (mem->memBlocks[i]->MemValue()
-                 == (label->text().toInt(nullptr, 16) >> 4))
+                 == (label->text().toInt(nullptr, 16) >> PAGE_INC_BIT))
         { // replace page_i if not missing page.
             label->MarkBlue();
             if (mem->Replace(label, i))
@@ -80,13 +80,13 @@ bool Consumers::MissingPage()
                 });
             }
             mem->data->HitPage();
-            hitPage = i;
+            hitPageBlock = i;
             return false;
         }
     }
     // missing page.
     label->MarkRed();
     mem->data->MissPage();
-    hitPage = -1;
+    hitPageBlock = -1;
     return true;
 }
