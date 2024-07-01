@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/font">
+        <file>font/JetBrainsMonoNL-Medium.ttf</file>
+        <file>font/YouSheShaYuFeiTeJianKangTi.ttf</file>
+    </qresource>
+</RCC>
